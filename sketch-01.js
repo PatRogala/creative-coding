@@ -17,7 +17,7 @@ const sketch = () => {
     const rows = 5;
     const cols = 5;
     const change_for_double_line = 0.5;
-    const double_line_padding = 10;
+    const double_line_padding = 6;
     let x, y;
 
     const start_padding = (width - (w * cols + gap * (cols - 1))) * 0.5;
