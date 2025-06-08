@@ -17,3 +17,9 @@ You can open examples by running `npx canvas-sketch-cli sketch-01.js --open`
 [Sketch 03](./sketch-03.js)
 
 ![Sketch 03 image](.github/03.png)
+
+---
+
+[Sketch 04](./sketch-04.js)
+
+![Sketch 04 image](.github/04.png)
