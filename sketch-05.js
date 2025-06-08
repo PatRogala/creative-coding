@@ -7,12 +7,20 @@ const settings = {
 
 let manager;
 
-let text = 'A';
-let fontSize = 1200;
+let logoImage;
 let fontFamily = 'serif';
 
 const typeCanvas = document.createElement('canvas');
 const typeContext = typeCanvas.getContext('2d');
+
+const loadImage = (url) => {
+	return new Promise((resolve, reject) => {
+		const img = new Image();
+		img.onload = () => resolve(img);
+		img.onerror = () => reject();
+		img.src = url;
+	});
+};
 
 const sketch = ({ context, width, height }) => {
 	const cell = 20;
@@ -27,41 +35,32 @@ const sketch = ({ context, width, height }) => {
 		typeContext.fillStyle = 'black';
 		typeContext.fillRect(0, 0, cols, rows);
 
-		fontSize = cols * 1.2;
+		if (logoImage) {
+			const imageAspect = logoImage.width / logoImage.height;
+			const canvasAspect = cols / rows;
 
-		typeContext.fillStyle = 'white';
-		typeContext.font = `${fontSize}px ${fontFamily}`;
-		typeContext.textBaseline = 'top';
+			let drawWidth, drawHeight;
+			if (imageAspect > canvasAspect) {
+				drawWidth = cols * 0.8;
+				drawHeight = drawWidth / imageAspect;
+			} else {
+				drawHeight = rows * 0.8;
+				drawWidth = drawHeight * imageAspect;
+			}
 
-		const metrics = typeContext.measureText(text);
-		const mx = metrics.actualBoundingBoxLeft * -1;
-		const my = metrics.actualBoundingBoxAscent * -1;
-		const mw = metrics.actualBoundingBoxLeft + metrics.actualBoundingBoxRight;
-		const mh = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+			const x = (cols - drawWidth) * 0.5;
+			const y = (rows - drawHeight) * 0.5;
 
-		const tx = (cols - mw) * 0.5 - mx;
-		const ty = (rows - mh) * 0.5 - my;
-
-		typeContext.save();
-		typeContext.translate(tx, ty);
-
-		typeContext.beginPath();
-		typeContext.rect(mx, my, mw, mh);
-		typeContext.stroke();
-
-		typeContext.fillText(text, 0, 0);
-		typeContext.restore();
+			typeContext.drawImage(logoImage, x, y, drawWidth, drawHeight);
+		}
 
 		const typeData = typeContext.getImageData(0, 0, cols, rows).data;
-
 
 		context.fillStyle = 'black';
 		context.fillRect(0, 0, width, height);
 
 		context.textBaseline = 'middle';
 		context.textAlign = 'center';
-
-		// context.drawImage(typeCanvas, 0, 0);
 
 		for (let i = 0; i < numCells; i++) {
 			const col = i % cols;
@@ -86,8 +85,6 @@ const sketch = ({ context, width, height }) => {
 			context.translate(x, y);
 			context.translate(cell * 0.5, cell * 0.5);
 
-			// context.fillRect(0, 0, cell, cell);
-
 			context.fillText(glyph, 0, 0);
 
 			context.restore();
@@ -107,50 +104,13 @@ const getGlyph = (v) => {
 	return random.pick(glyphs);
 };
 
-
-const onKeyUp = (e) => {
-	text = e.key.toUpperCase();
-	manager.render();
-};
-
-document.addEventListener('keyup', onKeyUp);
-
-
 const start = async () => {
-	manager = await canvasSketch(sketch, settings);
+	try {
+		logoImage = await loadImage('./logo.png');
+		manager = await canvasSketch(sketch, settings);
+	} catch (error) {
+		console.error('Error loading image:', error);
+	}
 };
 
 start();
-
-
-
-
-
-/*
-const url = 'https://picsum.photos/200';
-
-const loadMeSomeImage = (url) => {
-	return new Promise((resolve, reject) => {
-		const img = new Image();
-		img.onload = () => resolve(img);
-		img.onerror = () => reject();
-		img.src = url;
-	});
-};
-
-const start = async () => {
-	const img = await loadMeSomeImage(url);
-	console.log('image width', img.width);
-	console.log('this line');
-};
-
-// const start = () => {
-// 	loadMeSomeImage(url).then(img => {
-// 		console.log('image width', img.width);
-// 	});
-// 	console.log('this line');
-// };
-
-
-start();
-*/
